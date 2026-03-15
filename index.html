@@ -1,83 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Language Detection</title>
+<title>Regional Language Detection</title>
 </head>
 
 <body>
 
 <h1 id="title">Welcome</h1>
-<p id="text">This is the English version of the website.</p>
+<p id="text">This website is in English</p>
 
 <script>
 
 function loadLanguage(lang){
 
 if(lang === "hindi"){
-document.getElementById("title").innerText = "स्वागत है";
-document.getElementById("text").innerText = "यह वेबसाइट हिंदी में दिखाई जा रही है";
-}
-
-else if(lang === "gujarati"){
-document.getElementById("title").innerText = "સ્વાગત છે";
-document.getElementById("text").innerText = "આ વેબસાઇટ ગુજરાતી ભાષામાં છે";
-}
-
-else if(lang === "tamil"){
-document.getElementById("title").innerText = "வரவேற்கிறோம்";
-document.getElementById("text").innerText = "இந்த இணையதளம் தமிழ் மொழியில் உள்ளது";
+document.getElementById("title").innerText="स्वागत है";
+document.getElementById("text").innerText="यह वेबसाइट हिंदी में दिखाई जा रही है";
 }
 
 else if(lang === "marathi"){
-document.getElementById("title").innerText = "स्वागत आहे";
-document.getElementById("text").innerText = "ही वेबसाइट मराठीत आहे";
+document.getElementById("title").innerText="स्वागत आहे";
+document.getElementById("text").innerText="ही वेबसाइट मराठीत आहे";
+}
+
+else if(lang === "gujarati"){
+document.getElementById("title").innerText="સ્વાગત છે";
+document.getElementById("text").innerText="આ વેબસાઇટ ગુજરાતી ભાષામાં છે";
+}
+
+else if(lang === "tamil"){
+document.getElementById("title").innerText="வரவேற்கிறோம்";
+document.getElementById("text").innerText="இந்த இணையதளம் தமிழ் மொழியில் உள்ளது";
 }
 
 else{
-document.getElementById("title").innerText = "Welcome";
-document.getElementById("text").innerText = "This is the English version of the website";
+document.getElementById("title").innerText="Welcome";
+document.getElementById("text").innerText="This website is in English";
 }
 
 }
 
 function detectBrowserLanguage(){
 
-let lang = navigator.language || navigator.userLanguage;
+let lang = navigator.language || "";
 
 if(lang.includes("hi")) return "hindi";
+if(lang.includes("mr")) return "marathi";
 if(lang.includes("gu")) return "gujarati";
 if(lang.includes("ta")) return "tamil";
-if(lang.includes("mr")) return "marathi";
 
 return "english";
-}
-
-function detectGPSLocation(){
-
-if(navigator.geolocation){
-
-navigator.geolocation.getCurrentPosition(function(position){
-
-let lat = position.coords.latitude;
-let lon = position.coords.longitude;
-
-fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
-.then(res => res.json())
-.then(data => {
-
-let state = data.address.state;
-
-if(state === "Rajasthan") loadLanguage("hindi");
-else if(state === "Gujarat") loadLanguage("gujarati");
-else if(state === "Tamil Nadu") loadLanguage("tamil");
-else if(state === "Maharashtra") loadLanguage("marathi");
-else loadLanguage("english");
-
-});
-
-});
-
-}
 
 }
 
@@ -90,35 +62,69 @@ fetch("https://ipapi.co/json/")
 let state = data.region;
 
 if(state === "Rajasthan") loadLanguage("hindi");
+else if(state === "Maharashtra") loadLanguage("marathi");
 else if(state === "Gujarat") loadLanguage("gujarati");
 else if(state === "Tamil Nadu") loadLanguage("tamil");
-else if(state === "Maharashtra") loadLanguage("marathi");
-else loadLanguage("english");
+else loadLanguage(detectBrowserLanguage());
+
+})
+.catch(() => {
+
+loadLanguage(detectBrowserLanguage());
 
 });
 
 }
 
-function startLanguageDetection(){
+function detectGPS(){
 
-let browserLang = detectBrowserLanguage();
+if(navigator.geolocation){
 
-if(browserLang !== "english"){
-loadLanguage(browserLang);
-}
-else{
+navigator.geolocation.getCurrentPosition(
 
-detectGPSLocation();
+function(position){
 
-setTimeout(()=>{
+let lat = position.coords.latitude;
+let lon = position.coords.longitude;
+
+fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+.then(res => res.json())
+.then(data => {
+
+let state = data.address.state;
+
+if(state === "Rajasthan") loadLanguage("hindi");
+else if(state === "Maharashtra") loadLanguage("marathi");
+else if(state === "Gujarat") loadLanguage("gujarati");
+else if(state === "Tamil Nadu") loadLanguage("tamil");
+else loadLanguage(detectBrowserLanguage());
+
+})
+.catch(() => {
+
 detectIPRegion();
-},3000);
+
+});
+
+},
+
+function(){
+
+detectIPRegion();
+
+}
+
+);
+
+}else{
+
+detectIPRegion();
 
 }
 
 }
 
-startLanguageDetection();
+detectGPS();
 
 </script>
 
