@@ -1,106 +1,149 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Language Detection</title>
+<title>Regional Language Detection Demo</title>
+<meta charset="UTF-8">
+<style>
+body{
+font-family: Arial, sans-serif;
+text-align:center;
+margin-top:100px;
+}
+</style>
 </head>
 
 <body>
 
-<h1 id="title">Loading...</h1>
+<h1 id="title">Ruk Bhai</h1>
+<p id="desc">Please wait while we detect your region.</p>
 
 <script>
 
+
 function loadLanguage(lang){
 
-if(lang==="marathi"){
-document.getElementById("title").innerText="स्वागत आहे";
-}
-else if(lang==="hindi"){
-document.getElementById("title").innerText="स्वागत है";
-}
-else if(lang==="gujarati"){
-document.getElementById("title").innerText="સ્વાગત છે";
-}
-else if(lang==="tamil"){
-document.getElementById("title").innerText="வரவேற்கிறோம்";
-}
-else{
-document.getElementById("title").innerText="Welcome";
+const content = {
+english : {
+title : "Welcome",
+desc : "Website loaded in English"
+},
+
+hindi : {
+title : "स्वागत है",
+desc : "यह वेबसाइट हिंदी भाषा में है"
+},
+
+marathi : {
+title : "स्वागत आहे",
+desc : "ही वेबसाइट मराठी भाषेत आहे"
+},
+
+gujarati : {
+title : "સ્વાગત છે",
+desc : "આ વેબસાઇટ ગુજરાતી ભાષામાં છે"
+},
+
+tamil : {
+title : "வரவேற்கிறோம்",
+desc : "இந்த இணையதளம் தமிழ் மொழியில் உள்ளது"
 }
 
 }
 
-function browserFallback(){
+const selected = content[lang] || content.english
 
-let lang=navigator.language || "";
-
-if(lang.includes("mr")) loadLanguage("marathi");
-else if(lang.includes("hi")) loadLanguage("hindi");
-else if(lang.includes("gu")) loadLanguage("gujarati");
-else if(lang.includes("ta")) loadLanguage("tamil");
-else loadLanguage("english");
+document.getElementById("title").innerText = selected.title
+document.getElementById("desc").innerText = selected.desc
 
 }
 
-function detectIP(){
+
+
+function detectBrowserLanguage(){
+
+const lang = navigator.language || ""
+
+if(lang.includes("mr")) return "marathi"
+if(lang.includes("hi")) return "hindi"
+if(lang.includes("gu")) return "gujarati"
+if(lang.includes("ta")) return "tamil"
+
+return "english"
+
+}
+
+
+
+function detectIPLocation(){
 
 fetch("https://ipapi.co/json/")
-.then(r=>r.json())
-.then(data=>{
+.then(res => res.json())
+.then(data => {
 
-let state=data.region;
+const state = data.region
 
-if(state==="Maharashtra") loadLanguage("marathi");
-else if(state==="Rajasthan") loadLanguage("hindi");
-else if(state==="Gujarat") loadLanguage("gujarati");
-else if(state==="Tamil Nadu") loadLanguage("tamil");
-else browserFallback();
+if(state === "Maharashtra") loadLanguage("marathi")
+else if(state === "Rajasthan") loadLanguage("hindi")
+else if(state === "Gujarat") loadLanguage("gujarati")
+else if(state === "Tamil Nadu") loadLanguage("tamil")
+else loadLanguage(detectBrowserLanguage())
 
 })
-.catch(browserFallback);
+.catch(() => {
+
+loadLanguage(detectBrowserLanguage())
+
+})
 
 }
 
-function detectGPS(){
+
+
+function detectGPSLocation(){
 
 if(!navigator.geolocation){
-detectIP();
-return;
+detectIPLocation()
+return
 }
 
 navigator.geolocation.getCurrentPosition(
 
-function(pos){
+function(position){
 
-let lat=pos.coords.latitude;
-let lon=pos.coords.longitude;
+const lat = position.coords.latitude
+const lon = position.coords.longitude
 
 fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
-.then(r=>r.json())
-.then(data=>{
+.then(res => res.json())
+.then(data => {
 
-let state=data.address.state;
+const state = data.address.state
 
-if(state==="Maharashtra") loadLanguage("marathi");
-else if(state==="Rajasthan") loadLanguage("hindi");
-else if(state==="Gujarat") loadLanguage("gujarati");
-else if(state==="Tamil Nadu") loadLanguage("tamil");
-else browserFallback();
+if(state === "Maharashtra") loadLanguage("marathi")
+else if(state === "Rajasthan") loadLanguage("hindi")
+else if(state === "Gujarat") loadLanguage("gujarati")
+else if(state === "Tamil Nadu") loadLanguage("tamil")
+else loadLanguage(detectBrowserLanguage())
 
 })
-.catch(detectIP);
+.catch(() => {
+
+detectIPLocation()
+
+})
 
 },
 
 function(){
-detectIP();
+
+detectIPLocation()
+
+})
+
 }
 
-);
 
-}
-
-detectGPS();
+detectGPSLocation()
 
 </script>
 
