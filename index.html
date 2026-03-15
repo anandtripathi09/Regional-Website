@@ -1,126 +1,102 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Regional Language Detection</title>
+<title>Language Detection</title>
 </head>
 
 <body>
 
-<h1 id="title">Welcome</h1>
-<p id="text">This website is in English</p>
+<h1 id="title">Loading...</h1>
 
 <script>
 
 function loadLanguage(lang){
 
-if(lang === "hindi"){
-document.getElementById("title").innerText="स्वागत है";
-document.getElementById("text").innerText="यह वेबसाइट हिंदी में दिखाई जा रही है";
-}
-
-else if(lang === "marathi"){
+if(lang==="marathi"){
 document.getElementById("title").innerText="स्वागत आहे";
-document.getElementById("text").innerText="ही वेबसाइट मराठीत आहे";
 }
-
-else if(lang === "gujarati"){
+else if(lang==="hindi"){
+document.getElementById("title").innerText="स्वागत है";
+}
+else if(lang==="gujarati"){
 document.getElementById("title").innerText="સ્વાગત છે";
-document.getElementById("text").innerText="આ વેબસાઇટ ગુજરાતી ભાષામાં છે";
 }
-
-else if(lang === "tamil"){
+else if(lang==="tamil"){
 document.getElementById("title").innerText="வரவேற்கிறோம்";
-document.getElementById("text").innerText="இந்த இணையதளம் தமிழ் மொழியில் உள்ளது";
 }
-
 else{
 document.getElementById("title").innerText="Welcome";
-document.getElementById("text").innerText="This website is in English";
 }
 
 }
 
-function detectBrowserLanguage(){
+function browserFallback(){
 
-let lang = navigator.language || "";
+let lang=navigator.language || "";
 
-if(lang.includes("hi")) return "hindi";
-if(lang.includes("mr")) return "marathi";
-if(lang.includes("gu")) return "gujarati";
-if(lang.includes("ta")) return "tamil";
-
-return "english";
+if(lang.includes("mr")) loadLanguage("marathi");
+else if(lang.includes("hi")) loadLanguage("hindi");
+else if(lang.includes("gu")) loadLanguage("gujarati");
+else if(lang.includes("ta")) loadLanguage("tamil");
+else loadLanguage("english");
 
 }
 
-function detectIPRegion(){
+function detectIP(){
 
 fetch("https://ipapi.co/json/")
-.then(res => res.json())
-.then(data => {
+.then(r=>r.json())
+.then(data=>{
 
-let state = data.region;
+let state=data.region;
 
-if(state === "Rajasthan") loadLanguage("hindi");
-else if(state === "Maharashtra") loadLanguage("marathi");
-else if(state === "Gujarat") loadLanguage("gujarati");
-else if(state === "Tamil Nadu") loadLanguage("tamil");
-else loadLanguage(detectBrowserLanguage());
+if(state==="Maharashtra") loadLanguage("marathi");
+else if(state==="Rajasthan") loadLanguage("hindi");
+else if(state==="Gujarat") loadLanguage("gujarati");
+else if(state==="Tamil Nadu") loadLanguage("tamil");
+else browserFallback();
 
 })
-.catch(() => {
-
-loadLanguage(detectBrowserLanguage());
-
-});
+.catch(browserFallback);
 
 }
 
 function detectGPS(){
 
-if(navigator.geolocation){
+if(!navigator.geolocation){
+detectIP();
+return;
+}
 
 navigator.geolocation.getCurrentPosition(
 
-function(position){
+function(pos){
 
-let lat = position.coords.latitude;
-let lon = position.coords.longitude;
+let lat=pos.coords.latitude;
+let lon=pos.coords.longitude;
 
 fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
-.then(res => res.json())
-.then(data => {
+.then(r=>r.json())
+.then(data=>{
 
-let state = data.address.state;
+let state=data.address.state;
 
-if(state === "Rajasthan") loadLanguage("hindi");
-else if(state === "Maharashtra") loadLanguage("marathi");
-else if(state === "Gujarat") loadLanguage("gujarati");
-else if(state === "Tamil Nadu") loadLanguage("tamil");
-else loadLanguage(detectBrowserLanguage());
+if(state==="Maharashtra") loadLanguage("marathi");
+else if(state==="Rajasthan") loadLanguage("hindi");
+else if(state==="Gujarat") loadLanguage("gujarati");
+else if(state==="Tamil Nadu") loadLanguage("tamil");
+else browserFallback();
 
 })
-.catch(() => {
-
-detectIPRegion();
-
-});
+.catch(detectIP);
 
 },
 
 function(){
-
-detectIPRegion();
-
+detectIP();
 }
 
 );
-
-}else{
-
-detectIPRegion();
-
-}
 
 }
 
